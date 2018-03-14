@@ -170,3 +170,10 @@ extension AuthedRequestPerformer: RequestPerformer {
         task.resume()
     }
 }
+
+extension Client {
+    public static func randomRecordData(numBytes: Int = 16_000_000) -> RecordData? {
+        return Crypto.randomAscii(numBytes: numBytes)
+            .map { RecordData(cleartext: ["": $0]) }
+    }
+}

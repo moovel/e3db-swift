@@ -17,6 +17,20 @@ struct Crypto {
 
 // MARK: Utilities
 
+extension Data {
+    func asciiMasked() -> Data {
+        let maskedBytes = [UInt8](self).map { $0 & 127 }
+        return Data(bytes: maskedBytes)
+    }
+}
+extension Crypto {
+    static func randomAscii(numBytes: Int = 16_000_000) -> String? {
+        return sodium.randomBytes.buf(length: numBytes)
+            .map { $0.asciiMasked() }
+            .flatMap { String(data: $0, encoding: .ascii) }
+    }
+}
+
 extension Crypto {
     static func generateKeyPair() -> Box.KeyPair? {
         return sodium.box.keyPair()

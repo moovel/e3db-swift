@@ -40,7 +40,7 @@ class ViewController: UIViewController {
 
         // No client previously registered on this device,
         // use the client token to register.
-        Client.register(token: e3dbToken, clientName: "ExampleApp") { result in
+        Client.register(token: e3dbToken, clientName: "ExampleApp" + UUID().uuidString, apiUrl: "https://api.e3db.com") { result in
             switch result {
 
             // The operation was successful, here's the configuration
@@ -66,6 +66,30 @@ class ViewController: UIViewController {
     /// The `write` operation will encrypt the secret message
     /// before it leaves the device, ensuring End-to-End Encryption
     @IBAction func write() {
+
+        print("Generating random record data")
+        guard let data = Client.randomRecordData() else { return }
+        print("Generated.")
+        sleep(1)
+
+        let benchmarkTest = "test" + UUID().uuidString
+        e3db?.createWriterKey(type: benchmarkTest) { result in
+            print("Encrypting record")
+            guard let client = self.e3db,
+                 case .success(let eak) = result,
+                  let rec = try? client.encrypt(type: benchmarkTest, data: data, eakInfo: eak)
+                else { return }
+            print("Encrypted")
+
+            sleep(2)
+
+            print("Decrypting data")
+            _ = try? client.decrypt(encryptedDoc: rec, eakInfo: eak)
+            print("Decrypted.")
+        }
+
+        guard e3db == nil else { return }
+
         guard let msg = messageView.text else {
             return print("Text field contains no text")
         }
